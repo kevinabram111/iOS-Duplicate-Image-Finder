@@ -178,9 +178,9 @@ else:
         for _, row in current_data.iterrows():
             img_cols = st.columns([1, 1])
             with img_cols[0]:
-                st.image(row['Image A'], caption=f"A - {os.path.basename(row['Image A'])} ({row['Image A Size (KB)']} KB)", use_column_width=True)
+                st.image(row['Image A'], caption=f"A - {os.path.basename(row['Image A'])} ({row['Image A Size (KB)']} KB)", use_container_width=True)
             with img_cols[1]:
-                st.image(row['Image B'], caption=f"B - {os.path.basename(row['Image B'])} ({row['Image B Size (KB)']} KB)", use_column_width=True)
+                st.image(row['Image B'], caption=f"B - {os.path.basename(row['Image B'])} ({row['Image B Size (KB)']} KB)", use_container_width=True)
             st.markdown(f"**Similarity: {row['Similarity %']}% | Suggested Keep: {row['Suggested Keep']}**")
             st.markdown("---")
 
