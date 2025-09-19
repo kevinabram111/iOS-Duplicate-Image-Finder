@@ -115,7 +115,7 @@ st.set_page_config(page_title="iOS Duplicate Image Finder", layout="wide")
 st.title("🖼️ iOS Duplicate Image Finder")
 
 # New: Allow user to attach/upload a ZIP containing .xcassets
-with st.expander("📎 Attach .xcassets (ZIP) — optional", expanded=False):
+with st.expander("📎 Attach .xcassets (ZIP)", expanded=False):
     uploaded = st.file_uploader("Upload a ZIP that contains one or more .xcassets directories", type=["zip"], accept_multiple_files=False)
     selected_assets_dir = None
     if uploaded is not None:
