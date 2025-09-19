@@ -13,12 +13,12 @@ import time
 import zipfile
 import tempfile
 
-# --- Settings ---
+# Settings
 SIMILARITY_THRESHOLD = 5
 PAGE_SIZE = 10
 NUM_WORKERS = max(multiprocessing.cpu_count() - 1, 1)
 
-# --- New: ZIP -> .xcassets extraction ---
+# ZIP Extraction
 def extract_xcassets_from_zip(uploaded_zip):
     """Return (temp_root, list_of_found_xcassets_paths)."""
     tmpdir = tempfile.mkdtemp(prefix="xcassets_")
@@ -33,8 +33,8 @@ def extract_xcassets_from_zip(uploaded_zip):
             if d.endswith(".xcassets"):
                 found.append(os.path.join(dirpath, d))
     return tmpdir, found
-
-# --- Helper Functions ---
+    
+# Helpers
 def get_image_paths(folder):
     image_paths = []
     for root, _, files in os.walk(folder):
@@ -45,7 +45,7 @@ def get_image_paths(folder):
             largest_file = max(pngs, key=lambda f: os.path.getsize(os.path.join(root, f)))
             image_paths.append(os.path.join(root, largest_file))
     return image_paths
-
+    
 def compute_hash(path):
     try:
         img = Image.open(path)
@@ -56,7 +56,7 @@ def compute_hash(path):
     except Exception as e:
         print(f"Error hashing {path}: {e}")
         return path, None
-
+        
 def compare_pair(args):
     (path1, hash1), (path2, hash2) = args
     if hash1 is None or hash2 is None:
@@ -75,7 +75,7 @@ def compare_pair(args):
             'Suggested Keep': 'A' if size1 < size2 else 'B'
         }
     return None
-
+    
 def encode_image_base64(path, max_size=(100, 100)):
     try:
         img = Image.open(path)
@@ -86,7 +86,7 @@ def encode_image_base64(path, max_size=(100, 100)):
         return f"<img src='data:image/png;base64,{encoded}' width='100'>"
     except:
         return ""
-
+        
 def find_similar_images_parallel(folder):
     paths = get_image_paths(folder)
     hashes = {}
@@ -96,7 +96,7 @@ def find_similar_images_parallel(folder):
         for future in as_completed(future_to_path):
             path, hash_val = future.result()
             hashes[path] = hash_val
-
+            
     hash_pairs = list(combinations(hashes.items(), 2))
     results = []
 
@@ -109,12 +109,11 @@ def find_similar_images_parallel(folder):
 
     results.sort(key=lambda x: -x['Similarity %'])
     return results
-
-# --- Streamlit App ---
+    
+# App
 st.set_page_config(page_title="iOS Duplicate Image Finder", layout="wide")
 st.title("🖼️ iOS Duplicate Image Finder")
 
-# New: Allow user to attach/upload a ZIP containing .xcassets
 with st.expander("📎 Attach .xcassets (ZIP)", expanded=False):
     uploaded = st.file_uploader("Upload a ZIP that contains one or more .xcassets directories", type=["zip"], accept_multiple_files=False)
     selected_assets_dir = None
@@ -137,7 +136,6 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 default_assets_dir = os.path.join(base_dir, "Assets.xcassets")
 assets_dir = selected_assets_dir if selected_assets_dir else default_assets_dir
 
-
 if not os.path.isdir(assets_dir):
     st.stop()
 else:
@@ -150,8 +148,7 @@ else:
 
     if st.session_state.duplicates:
         df = pd.DataFrame(st.session_state.duplicates)
-
-        # === Keep original UI controls unchanged ===
+        
         similarity_filter = st.slider("Minimum similarity %", 0, 100, 90)
         search_term = st.text_input("Search image name (optional):")
         sort_option = st.selectbox("Sort by", ["Similarity %", "Image A Size (KB)", "Image B Size (KB)"])
@@ -183,8 +180,7 @@ else:
                 st.image(row['Image B'], caption=f"B - {os.path.basename(row['Image B'])} ({row['Image B Size (KB)']} KB)", use_container_width=True)
             st.markdown(f"**Similarity: {row['Similarity %']}% | Suggested Keep: {row['Suggested Keep']}**")
             st.markdown("---")
-
-        # === Keep original export-to-HTML feature unchanged ===
+            
         if not df.empty:
             df_copy = df.copy()
             def encode_image_base64(path, max_size=(100, 100)):
